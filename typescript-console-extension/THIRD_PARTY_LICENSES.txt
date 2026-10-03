@@ -1,4 +1,4 @@
-typescript
+typescript/LICENSE.txt
 
 Apache License
 
@@ -57,7 +57,7 @@ If the Work includes a "NOTICE" text file as part of its distribution, then any 
 END OF TERMS AND CONDITIONS
 
 
-monaco-editor
+monaco-editor/LICENSE
 
 The MIT License (MIT)
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../src/devtools.js',import.meta.url),'utf8');
-function boot(chrome){const status={textContent:''};const errors=[];vm.runInNewContext(source,{chrome,document:{getElementById:()=>status},window:{addEventListener(){}},console:{info(){},error(...args){errors.push(args);}}});return {status,errors};}
+function boot(chrome){const status={textContent:''};const errors=[];vm.runInNewContext(source,{setInterval(){},setTimeout(){},chrome,document:{getElementById:()=>status},window:{addEventListener(){}},console:{info(){},error(...args){errors.push(args);}}});return {status,errors};}
 test('startup registers a panel using the legacy-compatible callback',()=>{
  let shown;
  const result=boot({runtime:{},devtools:{panels:{create(title,icon,page,callback){assert.equal(title,'TypeScript');assert.equal(page,'panel.html');callback({onShown:{addListener(fn){shown=fn;}}});}}}});

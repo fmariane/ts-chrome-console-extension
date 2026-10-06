@@ -1,7 +1,23 @@
 (() => {
+  let latest = 'DevTools entry point starting';
+  let port;
+  function connectDiagnostics() {
+    try {
+      port = chrome.runtime.connect({name: 'ts-console-diagnostics'});
+      port.postMessage({status: latest});
+      port.onDisconnect.addListener(() => {
+        port = null;
+        setTimeout(connectDiagnostics, 1000);
+      });
+    } catch {}
+  }
+  connectDiagnostics();
+  setInterval(() => { try { port?.postMessage({status: latest}); } catch {} }, 20000);
   const label = '[TypeScript Console startup]';
   const status = document.getElementById('startup-status');
   const report = (message, error = false) => {
+    latest = message;
+    try { port?.postMessage({status: message}); } catch {}
     if (status) status.textContent = message;
     console[error ? 'error' : 'info'](label, message);
   };

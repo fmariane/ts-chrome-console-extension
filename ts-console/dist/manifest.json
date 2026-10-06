@@ -1,1 +1,18 @@
-{"manifest_version":3,"name":"TypeScript Console","version":"0.2.1","description":"A TypeScript playground inside DevTools with temporary file tabs, import/export, type checking and quick fixes.","devtools_page":"devtools.html","minimum_chrome_version":"120","content_security_policy":{"extension_pages":"script-src 'self'; object-src 'self'; worker-src 'self'"}}
+{
+  "manifest_version": 3,
+  "name": "TypeScript Console",
+  "version": "0.2.2",
+  "description": "A TypeScript playground inside DevTools with temporary file tabs, import/export, type checking and quick fixes.",
+  "devtools_page": "devtools.html",
+  "minimum_chrome_version": "120",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
+  },
+  "action": {
+    "default_title": "TypeScript Console diagnostics",
+    "default_popup": "diagnostics.html"
+  },
+  "background": {
+    "service_worker": "diagnostics-worker.js"
+  }
+}

@@ -67,3 +67,9 @@ https://developer.chrome.com/docs/extensions/how-to/devtools/extend-devtools
 ## Chrome startup diagnostics (v0.2.1)
 
 The DevTools entry point reports registration success or failure in its console and status text. This diagnostic build does not establish the cause of a missing panel. On chrome://extensions, enable Developer mode and inspect the extension’s devtools.html view while the inspected page’s DevTools is open. Check its Console for `[TypeScript Console startup]`. If no devtools.html view is present, Chrome has not started the extension entry point for that toolbox. Check the loaded folder, enabled state and browser errors.
+
+## Repository builds and diagnostics — 0.2.2
+
+Run `npm run rebuild` inside `ts-console`. The build now updates both `ts-console/dist` and the repository's top-level `typescript-console-extension` folder, plus the top-level ZIPs. This replaces the previous nested-output packaging behavior.
+
+If the DevTools tab is missing, keep the website's DevTools open, click the extension's toolbar icon, and choose Refresh in the diagnostic popup. Copy its report. It checks packaged assets and shows startup messages even when the panel is missing. The diagnostic service worker keeps messages only in memory; it never receives snippets or website URLs. An empty connection list is diagnostic evidence, not proof of a specific cause. The inspected page's DevTools and a second DevTools window inspecting DevTools are different windows.

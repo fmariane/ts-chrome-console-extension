@@ -12,7 +12,7 @@ await build({
   bundle: true, outdir: dist, format: 'iife', platform: 'browser',
   target: 'chrome120', loader: { '.ttf': 'file' }, minify: true
 });
-for (const file of ['manifest.json', 'devtools.html', 'devtools.js', 'panel.html', 'style.css']) {
+for (const file of ['manifest.json', 'devtools.html', 'devtools.js', 'panel.html', 'style.css', 'diagnostics.html', 'diagnostics.js', 'diagnostics-worker.js']) {
   await copyFile(`src/${file}`, `${dist}/${file}`);
 }
 const licenses = await Promise.all(['typescript/LICENSE.txt', 'monaco-editor/LICENSE'].map(async file => file + '\n\n' + await readFile(`node_modules/${file}`, 'utf8')));

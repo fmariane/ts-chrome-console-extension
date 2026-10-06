@@ -1,16 +1,31 @@
-# TypeScript Console
+# TypeScript Console — v0.2
 
-A Chrome DevTools extension with a Monaco editor, TypeScript diagnostics, autocomplete, hover types, compiler-provided quick fixes, formatting, and execution in the inspected page.
+A Chrome DevTools extension with temporary file tabs, Monaco's TypeScript editor, diagnostics, autocomplete, hover types, quick fixes, formatting, and execution in the inspected page.
 
-## Install the built extension
+## Install or reload
 
-1. Extract `typescript-console-extension.zip` (or use this project's `dist` folder).
-2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
-3. Click **Load unpacked** and choose the folder containing `manifest.json`.
-4. Open a normal web page, open DevTools, and select **TypeScript** (possibly under the » menu). If DevTools was already open, close and reopen it.
-5. Write a snippet and press **Cmd+Enter** / **Ctrl+Enter**.
+1. Extract `typescript-console-extension.zip`, or use `outputs/ts-console/dist` from this task.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Click **Load unpacked** and select the folder containing `manifest.json`.
+4. Open a normal page, open DevTools, and select **TypeScript** (possibly under »).
+5. Write TypeScript and press **Cmd+Enter** / **Ctrl+Enter**.
 
-The last expression is displayed as the result. `console.log`, `info`, `warn`, `error`, `debug`, and `table` calls through the snippet's console are displayed in the panel. Hover a symbol for its type; use Ctrl+Space for suggestions and Cmd+. / Ctrl+. for available fixes. Fixes are offered where TypeScript provides them, not for every error.
+If the extension was loaded from the restored `outputs/ts-console/dist` folder, click its Reload button on `chrome://extensions`, then close and reopen DevTools. Export code you want to keep before reloading.
+
+## Files and temporary sessions
+
+- **New file** creates a tab. Tabs retain their contents, undo history, cursor, and scroll position. The file-name field changes the name used for downloads.
+- **Import files** accepts one or more UTF-8 `.ts` files, up to 2 MB each. Each opens in a new tab. Duplicate names receive a numeric suffix; existing tabs are never overwritten. Examples also open in new tabs.
+- **Export current file** downloads that file individually. Check that the download completed before discarding code.
+- Files and output are held only in memory. Closing DevTools or reloading the extension loses the session. Switching to another DevTools panel keeps it alive. The old v0.1 saved snippet is removed when v0.2 opens.
+- Closing a file or choosing **Close session…** shows a reminder with per-file export buttons and **Keep working** / **Discard and close** choices. Closing the session clears the workspace and output, leaving a new blank tab.
+- Chrome does not expose a cancellable DevTools close event. The panel requests a best-effort `beforeunload` warning, but Chrome can bypass it and controls its wording. A permanent reminder is shown. Export wanted files before closing DevTools with Chrome's own controls.
+
+## TypeScript console
+
+TypeScript compiles locally into JavaScript. The last expression is returned as the result. Supports top-level `await`, DOM globals, and `$0` for the selected element. Snippet console calls (`log`, `info`, `warn`, `error`, `debug`, `table`) appear in the panel.
+
+Hover for types; use **Ctrl+Space** for autocomplete and **Cmd+. / Ctrl+.** for available fixes. TypeScript supplies fixes where available, not for every error. Live type errors block execution by default; you can turn that off. Syntax errors still prevent compilation.
 
 ```ts
 const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('a'));
@@ -18,37 +33,37 @@ console.log('Links found:', links.length);
 links.map(link => ({ text: link.textContent, url: link.href }));
 ```
 
-## Behavior and limits
+Each execution has an independent async scope. Variables do not persist between runs, and tabs do not share types or form a module project. Explicit assignments to `window` affect and persist in the inspected page.
 
-- TypeScript is compiled locally to JavaScript; Chrome's engine itself is not modified. No remote compiler, telemetry, or host permissions.
-- Each run has an independent async scope. Variables do not persist between runs. Assign to `window` explicitly if persistence is needed; those changes affect the page.
-- Supports top-level `await`, DOM globals, and `$0` for the selected element. The last expression is automatically returned.
-- Live errors block execution by default. You can disable that check; syntax errors still prevent compilation.
-- Runs in the inspected page's main frame. Chrome internal pages and other restricted targets may reject execution. There is no frame selector.
-- Imports/exports, npm package resolution, automatic discovery of the site's TypeScript types, and native DevTools debugger integration are not included. Add type declarations in your snippet for site-specific globals.
-- Output is a bounded text snapshot, not a live object inspector. Arrays/objects are abbreviated and circular references are handled. Existing page logs and later asynchronous callbacks are not streamed into the panel.
-- After 15 seconds the panel stops waiting; this does not cancel code in the page. A synchronous infinite loop can freeze the page, just as in the native console.
-- Files and output are temporary: stored only in memory and lost when DevTools closes or the extension reloads. Version 0.1's locally saved snippet is deleted when this version opens. Switching to another DevTools panel keeps this session alive.
-- **New file** creates another tab. Each tab retains its editor contents, undo history, cursor, and scroll position. The file-name field sets its download name. Types are isolated between files; tabs do not form a module project.
-- **Import files** opens one or more UTF-8 `.ts` files (up to 2 MB each). Each import creates a new tab; duplicate names are numbered instead of overwriting existing content. Examples also open in new tabs.
-- **Export current file** downloads just that file. Exporting does not close it or guarantee the browser completed the download: check your downloads before discarding code.
-- Closing an individual file or choosing **Close session…** opens a reminder with per-file export buttons and **Keep working** / **Discard and close** choices. Close session clears the workspace and output; Chrome does not let a panel close DevTools programmatically.
-- Closing DevTools via Chrome's own controls cannot reliably be intercepted. The panel requests a best-effort `beforeunload` warning, but Chrome can skip it and controls its text. A permanent export reminder is shown for this reason. Export wanted files before closing DevTools.
+## Limitations
 
-## Build and test
+- Main frame only. Chrome internal/restricted pages may reject execution.
+- No imports/exports, npm resolution, automatic site type discovery, or native debugger integration. Supply declarations for site-specific globals yourself.
+- Output uses bounded text snapshots, not live object inspection. Existing page logs and later asynchronous callbacks are not streamed into the panel.
+- After 15 seconds the panel stops waiting; this does not cancel page execution. Synchronous infinite loops can freeze the inspected page.
+- All scripts and workers are bundled locally; there is no remote compiler, telemetry, or host permission request.
 
-Requires Node.js and npm.
+## Rebuild
+
+Requires Node.js, npm, and Python 3. In the source directory:
 
 ```sh
 npm ci
-npm test
-npm run build
+npm run rebuild
 ```
 
-Load `dist` as the unpacked extension. Dependencies are pinned and all runtime scripts and workers are bundled into that folder. No development server is needed.
+This runs the tests, builds `dist`, and packages extension and source ZIPs. `npm run build` alone only rebuilds `dist`.
 
-## Implementation
+For the original task workspace, the canonical source is now `extension/`, outside generated `outputs/`. Running `npm run rebuild --prefix extension` from the workspace restores `outputs/ts-console/dist` and both ZIPs even if `outputs` was deleted.
 
-Manifest V3 DevTools panel; Monaco's TypeScript worker supplies language features. The TypeScript compiler removes types and returns the last expression. `chrome.devtools.inspectedWindow.eval` runs an async wrapper; the panel polls a temporary page property for serialized results and removes it afterward.
+## Verification
 
-Reference: https://developer.chrome.com/docs/extensions/how-to/devtools/extend-devtools
+Ten automated tests cover transpilation, await, logs, runtime errors, circular values, scope isolation, diagnostics/fixes, safe download names, duplicate file names, and close-warning detection. The prior v0.2 browser preview verified tabs, imports, renaming and session clearing; completed downloads and native DevTools-close behavior have not been verified in Chrome.
+
+## Reference
+
+https://developer.chrome.com/docs/extensions/how-to/devtools/extend-devtools
+
+## Chrome startup diagnostics (v0.2.1)
+
+The DevTools entry point reports registration success or failure in its console and status text. This diagnostic build does not establish the cause of a missing panel. On chrome://extensions, enable Developer mode and inspect the extension’s devtools.html view while the inspected page’s DevTools is open. Check its Console for `[TypeScript Console startup]`. If no devtools.html view is present, Chrome has not started the extension entry point for that toolbox. Check the loaded folder, enabled state and browser errors.

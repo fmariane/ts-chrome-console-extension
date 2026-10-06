@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor';
 import { executionSource } from './compiler.js';
+import { evaluateInPage } from './firefox-api.js';
 import { fileName, uniqueName, hasContent } from './files.js';
 
 self.MonacoEnvironment = {
@@ -8,7 +9,7 @@ self.MonacoEnvironment = {
   }
 };
 const $ = id => document.getElementById(id);
-const api = globalThis.chrome?.devtools?.inspectedWindow;
+const api = globalThis.browser?.devtools?.inspectedWindow;
 const examples = {
   dom: 'const heading = document.querySelector<HTMLHeadingElement>("h1");\n\nconsole.log("Page title:", document.title);\nheading?.textContent ?? "No heading found";',
   types: 'interface Person {\n  name: string;\n  age: number;\n}\n\nconst person: Person = { name: "Ada", age: "36" };\n\nperson.name.toUpperCase();',
@@ -134,12 +135,7 @@ function markers() {
 }
 monaco.editor.onDidChangeMarkers(markers);
 addFile('snippet.ts', examples.dom);
-function evaluate(code) {
-  return new Promise((resolve, reject) => {
-    if (!api) return reject(new Error('Open this extension from the TypeScript tab in Chrome DevTools.'));
-    api.eval(code, (result, error) => error ? reject(new Error(error.description || error.value || 'Page evaluation failed')) : resolve(result));
-  });
-}
+function evaluate(code) { return evaluateInPage(api, code); }
 async function run() {
   if (running || !ready) return;
   running = true; $('run').disabled = true;

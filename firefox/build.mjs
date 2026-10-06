@@ -10,7 +10,7 @@ await build({
     'ts.worker': 'node_modules/monaco-editor/esm/vs/language/typescript/ts.worker.js'
   },
   bundle: true, outdir: dist, format: 'iife', platform: 'browser',
-  target: 'chrome120', loader: { '.ttf': 'file' }, minify: true
+  target: 'firefox140', loader: { '.ttf': 'file' }, minify: true
 });
 for (const file of ['manifest.json', 'devtools.html', 'devtools.js', 'panel.html', 'style.css']) {
   await copyFile(`src/${file}`, `${dist}/${file}`);
